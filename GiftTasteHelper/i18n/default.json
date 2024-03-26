@@ -19,7 +19,7 @@
   "options.colorizeUniversalGiftNames.desc": "Colorize Universal gift names",
   "options.other": "Other",
   "options.maxGiftsToDisplay": "Max gifts to display",
-  "options.maxGiftsToDisplay.desc": "Max gifts to display on Tooltip. (0 = no limit)",
+  "options.maxGiftsToDisplay.desc": "Max gifts to display on Tooltip. (0 is no limit)",
   "options.shareKnownGiftsWithAllSaves": "Share known gifts with all saves",
   "options.shareKnownGiftsWithAllSaves.desc": "Share known gifts with all saves"
 }
