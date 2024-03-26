@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using GenericModConfigMenu;
 using GiftTasteHelper.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -42,6 +43,7 @@ namespace GiftTasteHelper
             helper.Events.GameLoop.SaveLoaded += (sender, e) => Initialize();
             helper.Events.GameLoop.ReturnedToTitle += (sender, e) => Shutdown();
             helper.Events.GameLoop.DayStarted += this.OnDayStarted;
+            helper.Events.GameLoop.GameLaunched += RegisterConfigMenu;
 
             InitDebugCommands(this.Helper);
             Startup();
@@ -70,6 +72,105 @@ namespace GiftTasteHelper
                 LoadGiftHelpers(Helper);
                 this.ReloadHelpers = false;
             }
+        }
+
+        private void RegisterConfigMenu(object sender, GameLaunchedEventArgs e)
+        {
+            // get Generic Mod Config Menu's API (if it's installed)
+            var configMenu = this.Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+            if (configMenu is null)
+                return;
+
+            // register mod
+            configMenu.Register(
+                mod: this.ModManifest,
+                reset: () => this.Config = new ModConfig(),
+                save: () => this.Helper.WriteConfig(this.Config)
+            );
+
+            configMenu.AddSectionTitle(
+                mod: this.ModManifest,
+                text: () => Helper.Translation.Get("options.display")
+                );
+
+            configMenu.AddBoolOption(
+                mod: this.ModManifest,
+                name: () => Helper.Translation.Get("options.showOnCalendar"),
+                tooltip: () => Helper.Translation.Get("options.showOnCalendar.desc"),
+                getValue: () => this.Config.ShowOnCalendar,
+                setValue: value => this.Config.ShowOnCalendar = value
+            );
+
+            configMenu.AddBoolOption(
+                mod: this.ModManifest,
+                name: () => Helper.Translation.Get("options.showOnSocialPage"),
+                tooltip: () => Helper.Translation.Get("options.showOnSocialPage.desc"),
+                getValue: () => this.Config.ShowOnSocialPage,
+                setValue: value => this.Config.ShowOnSocialPage = value
+            );
+
+            configMenu.AddBoolOption(
+                mod: this.ModManifest,
+                name: () => Helper.Translation.Get("options.showOnlyKnownGifts"),
+                tooltip: () => Helper.Translation.Get("options.showOnlyKnownGifts.desc"),
+                getValue: () => this.Config.ShowOnlyKnownGifts,
+                setValue: value => this.Config.ShowOnlyKnownGifts = value
+            );
+
+            configMenu.AddBoolOption(
+                mod: this.ModManifest,
+                name: () => Helper.Translation.Get("options.showUniversalGifts"),
+                tooltip: () => Helper.Translation.Get("options.showUniversalGifts.desc"),
+                getValue: () => this.Config.ShowUniversalGifts,
+                setValue: value => this.Config.ShowUniversalGifts = value
+            );
+
+            configMenu.AddBoolOption(
+                mod: this.ModManifest,
+                name: () => Helper.Translation.Get("options.showGiftsForUnmetNPCs"),
+                tooltip: () => Helper.Translation.Get("options.showGiftsForUnmetNPCs.desc"),
+                getValue: () => this.Config.ShowGiftsForUnmetNPCs,
+                setValue: value => this.Config.ShowGiftsForUnmetNPCs = value
+            );
+
+            configMenu.AddBoolOption(
+                mod: this.ModManifest,
+                name: () => Helper.Translation.Get("options.hideTooltipWhenNoGiftsKnown"),
+                tooltip: () => Helper.Translation.Get("options.hideTooltipWhenNoGiftsKnown.desc"),
+                getValue: () => this.Config.HideTooltipWhenNoGiftsKnown,
+                setValue: value => this.Config.HideTooltipWhenNoGiftsKnown = value
+            );
+
+            configMenu.AddBoolOption(
+                mod: this.ModManifest,
+                name: () => Helper.Translation.Get("options.colorizeUniversalGiftNames"),
+                tooltip: () => Helper.Translation.Get("options.colorizeUniversalGiftNames.desc"),
+                getValue: () => this.Config.ColorizeUniversalGiftNames,
+                setValue: value => this.Config.ColorizeUniversalGiftNames = value
+            );
+
+            configMenu.AddSectionTitle(
+                mod: this.ModManifest,
+                text: () => Helper.Translation.Get("options.other")
+                );
+
+            configMenu.AddNumberOption(
+                mod: this.ModManifest,
+                name: () => Helper.Translation.Get("options.maxGiftsToDisplay"),
+                tooltip: () => Helper.Translation.Get("options.maxGiftsToDisplay.desc"),
+                min: 0,
+                interval: 1,
+                getValue: () => this.Config.MaxGiftsToDisplay,
+                setValue: value => this.Config.MaxGiftsToDisplay = value
+            );
+
+            configMenu.AddBoolOption(
+                mod: this.ModManifest,
+                name: () => Helper.Translation.Get("options.shareKnownGiftsWithAllSaves"),
+                tooltip: () => Helper.Translation.Get("options.shareKnownGiftsWithAllSaves.desc"),
+                getValue: () => this.Config.ShareKnownGiftsWithAllSaves,
+                setValue: value => this.Config.ShareKnownGiftsWithAllSaves = value
+            );
         }
 
         private void Shutdown()
