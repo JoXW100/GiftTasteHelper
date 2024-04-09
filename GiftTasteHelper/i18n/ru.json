@@ -5,7 +5,7 @@
   "options.display": "Отображение",
   "options.showOnCalendar": "Показывать в календаре",
   "options.showOnCalendar.desc": "Показывать подсказку в календаре при наведении мыши на день рождения",
-  "options.showOnSocialPage": "Показывать в социальной вкладке меню",
+  "options.showOnSocialPage": "Показывать на социальной вкладке меню",
   "options.showOnSocialPage.desc": "Показывать подсказку на социальной вкладке при наведении мыши на NPC",
   "options.showOnlyKnownGifts": "Показывать только известные подарки",
   "options.showOnlyKnownGifts.desc": "Показывать только те подарки, которые вы уже дарили этим NPC",
