@@ -202,6 +202,30 @@ namespace GiftTasteHelper
         /// <param name="e">The event data.</param>
         private void OnDayStarted(object sender, DayStartedEventArgs e)
         {
+            var giftedItems = Game1.player.giftedItems;
+            Utility.ForEachVillager(npc =>
+            {
+                Utils.DebugLog("Rebuilding gift database");
+
+                if (!giftedItems.ContainsKey(npc.Name))
+                {
+                    // you haven't given this person any gifts
+                    return true;
+                }
+
+                var giftedItemIds = giftedItems[npc.Name].Keys;
+                foreach (var giftedItemId in giftedItemIds)
+                {
+                    var taste = Utils.GetTasteForGift(npc.Name, giftedItemId);
+                    if (taste != GiftTaste.MAX)
+                    {
+                        this.GiftDatabase.AddGift(npc.Name, giftedItemId, taste);
+                    }
+                }
+
+                return true;
+            });
+
             if (Game1.dayOfMonth == 1 && this.GiftHelpers.ContainsKey(typeof(Billboard)))
             {
                 // Reset the birthdays when season changes
