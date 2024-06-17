@@ -64,7 +64,12 @@ namespace GiftTasteHelper.Framework
         {
             if (!Game1.objectData.TryGetValue(itemId, out var objectInfo))
             {
-                throw new System.ArgumentException($"Tried creating an item with an invalid id: {itemId}");
+                throw new ArgumentException($"Tried creating an item with an invalid id: {itemId}");
+            }
+
+            if (objectInfo is null)
+            {
+                throw new NullReferenceException($"Registered item with invalid info: {itemId}, possibly caused by another mod.");
             }
 
             string tokenizedName = TokenParser.ParseText(objectInfo.DisplayName);
@@ -81,11 +86,20 @@ namespace GiftTasteHelper.Framework
             };
         }
 
-        public static ItemData[] MakeItemsFromIds(IEnumerable<string> itemIds)
+        public static bool Validate(string? itemId)
         {
-            return itemIds
-                .Where(id => Game1.objectData.ContainsKey(id))
-                .Select(id => ItemData.MakeItem(id)).ToArray();
+            return itemId is not null && Game1.objectData.TryGetValue(itemId, out var objectInfo) && objectInfo is not null;
+        }
+
+        public static IEnumerable<ItemData> MakeItemsFromIds(IEnumerable<string> itemIds)
+        {
+            foreach (string itemId in itemIds)
+            {
+                if (ItemData.Validate(itemId))
+                {
+                    yield return ItemData.MakeItem(itemId);
+                }
+            }
         }
     }
 }
