@@ -122,7 +122,7 @@ namespace GiftTasteHelper.Framework
                 } 
                 else
                 {
-                    Utils.DebugLog($"Failed to make item from item id: {itemId}, Ignoring.", StardewModdingAPI.LogLevel.Warn);
+                    Utils.DebugLog($"Failed to make item from item id: {itemId}, Ignoring.");
                 }
             }
         }
