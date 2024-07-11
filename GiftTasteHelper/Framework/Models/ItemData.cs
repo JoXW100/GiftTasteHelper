@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
 using StardewValley;
-using StardewValley.GameData.Objects;
 using StardewValley.TokenizableStrings;
 
 namespace GiftTasteHelper.Framework
@@ -46,7 +44,7 @@ namespace GiftTasteHelper.Framework
         /*********
         ** Public methods
         *********/
-        public override string ToString()
+        public override readonly string ToString()
         {
             return $"{{ID: {this.ID}, Name: {this.DisplayName}}}";
         }
@@ -86,7 +84,30 @@ namespace GiftTasteHelper.Framework
             };
         }
 
-        public static bool Validate(string? itemId)
+        public static bool TryMakeItem(string itemId, out ItemData item)
+        {
+            item = default;
+            if (!Game1.objectData.TryGetValue(itemId, out var objectInfo) || objectInfo is null)
+            {
+                return false;
+            }
+
+            string tokenizedName = TokenParser.ParseText(objectInfo.DisplayName);
+            item = new ItemData
+            {
+                Name = objectInfo.Name,
+                DisplayName = tokenizedName,
+                Price = objectInfo.Price,
+                Edibility = objectInfo.Edibility,
+                ID = itemId,
+                Category = ItemData.GetCategory(itemId),
+                SpriteIndex = objectInfo.SpriteIndex,
+                NameSize = SVector2.MeasureString(tokenizedName, Game1.smallFont)
+            };
+            return true;
+        }
+
+        public static bool Validate([NotNullWhen(true)] string? itemId)
         {
             return itemId is not null && Game1.objectData.TryGetValue(itemId, out var objectInfo) && objectInfo is not null;
         }
@@ -95,9 +116,13 @@ namespace GiftTasteHelper.Framework
         {
             foreach (string itemId in itemIds)
             {
-                if (ItemData.Validate(itemId))
+                if (ItemData.TryMakeItem(itemId, out var item))
                 {
-                    yield return ItemData.MakeItem(itemId);
+                    yield return item;
+                } 
+                else
+                {
+                    Utils.DebugLog($"Failed to make item from item id: {itemId}, Ignoring.", StardewModdingAPI.LogLevel.Warn);
                 }
             }
         }

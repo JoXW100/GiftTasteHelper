@@ -121,7 +121,15 @@ namespace GiftTasteHelper.Framework
 
         private float GetSlotHeight()
         {
-            return (this.FriendSlots[this.FirstCharacterIndex + 1].bounds.Y - this.FriendSlots[this.FirstCharacterIndex].bounds.Y);
+            if (this.FirstCharacterIndex != -1 && this.FriendSlots.Count > this.FirstCharacterIndex + 1)
+            {
+                return this.FriendSlots[this.FirstCharacterIndex + 1].bounds.Y - this.FriendSlots[this.FirstCharacterIndex].bounds.Y;
+            } 
+            else
+            {
+                Utils.DebugLog("SocialPage.GetSlotHeight out of range: index = " + this.FirstCharacterIndex, LogLevel.Debug);
+                return 0f;
+            }
         }
 
         // Creates the bounds around all the slots on the screen within the page border.

@@ -169,7 +169,7 @@ namespace GiftTasteHelper.Framework
                 return GiftTaste.MAX;
             }
 
-            if (!ItemData.Validate(itemId))
+            if (!ItemData.TryMakeItem(itemId, out var itemData))
             {
                 // Item is likely a category
                 return GiftTaste.MAX;
@@ -183,8 +183,6 @@ namespace GiftTasteHelper.Framework
                 Debug.Fail($"Invalid gift taste! npcName = {npcName}, itemId = {itemId}");
                 return taste;
             }
-
-            var itemData = ItemData.MakeItem(itemId);
 
             if (itemData.Category.Valid)
             {
