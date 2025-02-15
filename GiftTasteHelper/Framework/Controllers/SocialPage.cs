@@ -79,57 +79,76 @@ namespace GiftTasteHelper.Framework
 
         public string GetCurrentlyHoveredNpc(SVector2 mousePos)
         {
-            int slotIndex = this.GetSlotIndex();
-            if (slotIndex < 0 || slotIndex >= this.FriendSlots.Count || this.NativeSocialPage is null)
-            {
-                Utils.DebugLog("SlotIndex is invalid", LogLevel.Error);
-                return string.Empty;
-            }
-
             // Early out if the mouse isn't within the page bounds
-            Point mousePoint = mousePos.ToPoint();
-            if (!this.PageBounds.Contains(mousePoint))
+            var mousePoint = mousePos.ToPoint();
+            if (!PageBounds.Contains(mousePoint))
             {
                 return string.Empty;
             }
 
-            // Find the slot containing the cursor among the currently visible slots
-            string hoveredFriendName = string.Empty;
-            for (int i = slotIndex; i < slotIndex + SDVSocialPage.slotsOnPage; ++i)
+            var slotIndex = GetSlotIndex();
+            if (slotIndex < 0 || slotIndex >= FriendSlots.Count)
             {
-                var friend = this.FriendSlots[i];
-                var bounds = this.MakeSlotBounds(friend);
+                Utils.DebugLog($"Invalid social page slot index, was '{slotIndex}', expected range 0 - {FriendSlots.Count - 1}.", LogLevel.Error);
+                return string.Empty;
+            }
 
-                if (bounds.Contains(mousePoint) && Utils.Ensure(i < this.NativeSocialPage.SocialEntries.Count, "Name index out of range"))
+            if (NativeSocialPage == null)
+            {
+                Utils.DebugLog("¨Could not get native social page.", LogLevel.Error);
+                return string.Empty;
+            }
+
+            var entries = NativeSocialPage.SocialEntries;
+            // Find the slot containing the cursor among the currently visible slots
+            for (int i = slotIndex; i < slotIndex + SDVSocialPage.slotsOnPage && i < FriendSlots.Count && i < entries.Count; ++i)
+            {
+                var friend = FriendSlots[i];
+                var bounds = MakeSlotBounds(friend);
+
+                if (bounds.Contains(mousePoint))
                 {
-                    hoveredFriendName = this.NativeSocialPage.SocialEntries[i].InternalName;
-                    break;
+                    return entries[i].InternalName ?? string.Empty;
                 }
             }
 
-            return hoveredFriendName ?? string.Empty;
+            return string.Empty;
         }
 
         private int GetSlotIndex()
         {
-            if (this.NativeSocialPage is null || this.Reflection is null)
+            if (NativeSocialPage is null || Reflection is null)
             {
                 return 0;
             }
-            return this.Reflection.GetField<int>(this.NativeSocialPage, "slotPosition").GetValue();
+
+            try
+            {
+                return Reflection.GetField<int>(NativeSocialPage, "slotPosition").GetValue();
+            }
+            catch (InvalidOperationException)
+            {
+                return 0;
+            }
         }
 
         private float GetSlotHeight()
         {
-            if (this.FirstCharacterIndex != -1 && this.FriendSlots.Count > this.FirstCharacterIndex + 1)
+            try
             {
-                return this.FriendSlots[this.FirstCharacterIndex + 1].bounds.Y - this.FriendSlots[this.FirstCharacterIndex].bounds.Y;
-            } 
-            else
-            {
+                if (FirstCharacterIndex >= 0 && FriendSlots.Count > FirstCharacterIndex + 1)
+                {
+                    return FriendSlots[FirstCharacterIndex + 1].bounds.Y - FriendSlots[FirstCharacterIndex].bounds.Y;
+                }
+
                 Utils.DebugLog("SocialPage.GetSlotHeight out of range: index = " + this.FirstCharacterIndex, LogLevel.Debug);
-                return 0f;
             }
+            catch (Exception ex)
+            {
+                Utils.DebugLog($"Error occured while measuring social page character slot height. {ex.GetType().Name}: {ex.Message}", LogLevel.Error);
+            }
+
+            return 0f;
         }
 
         // Creates the bounds around all the slots on the screen within the page border.

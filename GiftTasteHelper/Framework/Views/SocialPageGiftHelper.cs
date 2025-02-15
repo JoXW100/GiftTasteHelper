@@ -28,12 +28,12 @@ namespace GiftTasteHelper.Framework
         public override bool OnOpen(IClickableMenu menu)
         {
             // reset
-            this.LastHoveredNpc = string.Empty;
+            LastHoveredNpc = string.Empty;
 
             SDVSocialPage? nativeSocialPage = this.GetNativeSocialPage(menu);
             if (nativeSocialPage != null)
             {
-                this.SocialPage.Init(nativeSocialPage, this.Reflection);
+                SocialPage.Init(nativeSocialPage, this.Reflection);
             }
             return base.OnOpen(menu);
         }
@@ -41,7 +41,7 @@ namespace GiftTasteHelper.Framework
         public override void OnResize(IClickableMenu menu)
         {
             base.OnResize(menu);
-            this.SocialPage.OnResize(this.GetNativeSocialPage(menu));
+            SocialPage.OnResize(this.GetNativeSocialPage(menu));
         }
 
         /*
@@ -54,7 +54,7 @@ namespace GiftTasteHelper.Framework
 
         public override void OnCursorMoved(CursorMovedEventArgs e)
         {
-            if (!Utils.Ensure(this.SocialPage != null, "Social Page is null!"))
+            if (!Utils.Ensure(SocialPage != null, "Social Page is null!"))
             {
                 return;
             }
@@ -71,7 +71,7 @@ namespace GiftTasteHelper.Framework
         {
             if (IsCorrectMenuTab(Game1.activeClickableMenu))
             {
-                this.SocialPage.OnUpdate();
+                SocialPage.OnUpdate();
             }
             else
             {
@@ -100,42 +100,51 @@ namespace GiftTasteHelper.Framework
         {
             try
             {
-                var tabs = this.Reflection.GetField<List<IClickableMenu>>(menu, "pages").GetValue();
+                var tabs = Reflection.GetField<List<IClickableMenu>>(menu, "pages").GetValue();
                 IClickableMenu tab = tabs[GameMenu.socialTab];
                 return (SDVSocialPage)tab;
             }
             catch (Exception ex)
             {
-                Utils.DebugLog("Failed to get native social page: " + ex, LogLevel.Warn);
+                Utils.DebugLog("Failed to get native social page: " + ex, LogLevel.Error);
                 return null;
             }
         }
 
         private void UpdateHoveredNPC(SVector2 mousePos)
         {
-            string hoveredNpc = this.SocialPage.GetCurrentlyHoveredNpc(mousePos);
+            string hoveredNpc = string.Empty;
+            try
+            {
+                hoveredNpc = SocialPage.GetCurrentlyHoveredNpc(mousePos);
+            }
+            catch (Exception e)
+            {
+                Utils.DebugLog($"Error occured when updating hovered NPC. {e.GetType().Name}: {e.Message}", LogLevel.Error);
+            }
+
             if (hoveredNpc == string.Empty)
             {
-                this.DrawCurrentFrame = false;
+                DrawCurrentFrame = false;
                 return;
             }
 
-            if (hoveredNpc != this.LastHoveredNpc)
+            if (hoveredNpc != LastHoveredNpc)
             {
-                if (this.GiftDrawDataProvider.HasDataForNpc(hoveredNpc) && SetSelectedNPC(hoveredNpc))
+                if (GiftDrawDataProvider.HasDataForNpc(hoveredNpc) && SetSelectedNPC(hoveredNpc))
                 {
-                    this.DrawCurrentFrame = true;
-                    this.LastHoveredNpc = hoveredNpc;
+                    DrawCurrentFrame = true;
+                    LastHoveredNpc = hoveredNpc;
                 }
                 else
                 {
-                    this.DrawCurrentFrame = false;
-                    this.LastHoveredNpc = string.Empty;
+                    DrawCurrentFrame = false;
+                    LastHoveredNpc = string.Empty;
                 }
             }
             else
             {
-                this.LastHoveredNpc = string.Empty;
+                LastHoveredNpc = string.Empty;
             }
         }
 

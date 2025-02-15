@@ -60,7 +60,7 @@ namespace GiftTasteHelper.Framework
                 DebugLog($"Failed Ensure: {message}");
             }
 #endif
-            return !!condition;
+            return condition;
         }
 
         public static int Clamp(int val, int min, int max)
